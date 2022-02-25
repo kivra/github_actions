@@ -29,7 +29,7 @@ runs:
           ${{ inputs.PROJECT_ROOT }}/.npm
           ${{ inputs.PROJECT_ROOT }}/node_modules
           ${{ inputs.PROJECT_ROOT }}/packages/**/node_modules
-        key: npm-v3-${{ inputs.PROJECT_ROOT }}-${{ runner.os }}-${{ inputs.NODE_VERSION }}-${{ hashFiles(format('{0}/package-lock.json', inputs.PROJECT_ROOT)) }}
+        key: npm-v3-${{ runner.os }}-${{ inputs.NODE_VERSION }}-${{ hashFiles(format('{0}/package-lock.json', inputs.PROJECT_ROOT)) }}
     # Skip post-install scripts here, as a malicious may otherwise steal NPM_AUTH_TOKEN
     - name: 📀 Install
       run: |

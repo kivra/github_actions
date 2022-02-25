@@ -6,7 +6,7 @@ inputs:
     description: 'NPM token'
     required: true
   PROJECT_ROOT:
-    default: './'
+    default: '.'
     description: 'Base path to npm project'
     required: false
   NODE_VERSION:

@@ -5,13 +5,17 @@ inputs:
   NPM_AUTH_TOKEN:
     description: 'NPM token'
     required: true
+  NODE_VERSION:
+    description: 'Node version to use'
+    required: true
+  POSTINSTALL:
+    default: ''
+    description: 'Postintall script to run after npm ci --ignore-scripts'
+    required: false
   PROJECT_ROOT:
     default: '.'
     description: 'Base path to npm project'
     required: false
-  NODE_VERSION:
-    description: 'Node version to use'
-    required: true
 
 runs:
   using: "composite"
@@ -28,7 +32,6 @@ runs:
         path: |
           ${{ inputs.PROJECT_ROOT }}/.npm
           ${{ inputs.PROJECT_ROOT }}/node_modules
-          ${{ inputs.PROJECT_ROOT }}/packages/**/node_modules
         key: npm-v3-${{ runner.os }}-${{ inputs.NODE_VERSION }}-${{ hashFiles(format('{0}/package-lock.json', inputs.PROJECT_ROOT)) }}
     # Skip post-install scripts here, as a malicious may otherwise steal NPM_AUTH_TOKEN
     - name: 📀 Install
@@ -39,7 +42,7 @@ runs:
         else
           cd ${{ inputs.PROJECT_ROOT }}
           npm ci --ignore-scripts
-          npm run bootstrap -- --ignore-scripts
+          ${{ inputs.POSTINSTALL }}
         fi
       shell: bash
       env:

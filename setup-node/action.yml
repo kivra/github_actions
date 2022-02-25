@@ -2,16 +2,16 @@ name: 'Setup node'
 description: 'Setup node and install dependencies from cache'
 
 inputs:
+  COMMAND:
+    default: 'npm ci --ignore-scripts'
+    description: 'Install command to run'
+    required: false
   NPM_AUTH_TOKEN:
     description: 'NPM token'
     required: true
   NODE_VERSION:
     description: 'Node version to use'
     required: true
-  POSTINSTALL:
-    default: ''
-    description: 'Postintall script to run after npm ci --ignore-scripts'
-    required: false
   PROJECT_ROOT:
     default: '.'
     description: 'Base path to npm project'
@@ -41,8 +41,7 @@ runs:
           echo "Cache hit - skipping dependency installation"
         else
           cd ${{ inputs.PROJECT_ROOT }}
-          npm ci --ignore-scripts
-          ${{ inputs.POSTINSTALL }}
+          ${{ inputs.COMMAND }}
         fi
       shell: bash
       env:

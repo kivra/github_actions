@@ -16,6 +16,10 @@ inputs:
     default: '.'
     description: 'Base path to npm project'
     required: false
+  CACHE_CHILD_NODE_MODULES:
+    default: "false"
+    description: 'When true <PROJECT_ROOT>/**/node_modules is added to the cache. Note that this does not affect the cache key.'
+    required: false
 
 runs:
   using: "composite"
@@ -32,7 +36,8 @@ runs:
         path: |
           ${{ inputs.PROJECT_ROOT }}/.npm
           ${{ inputs.PROJECT_ROOT }}/node_modules
-        key: npm-v3-${{ runner.os }}-${{ inputs.NODE_VERSION }}-${{ hashFiles(format('{0}/package-lock.json', inputs.PROJECT_ROOT)) }}
+          ${{ inputs.CACHE_CHILD_NODE_MODULES == 'true' && format('{0}/**/node_modules', inputs.PROJECT_ROOT) || '' }}
+        key: npm-v3-${{ runner.os }}-${{ inputs.NODE_VERSION }}-${{ hashFiles(format('{0}/package-lock.json', inputs.PROJECT_ROOT)) }}-children-${{ inputs.CACHE_CHILD_NODE_MODULES}}
     # Skip post-install scripts here, as a malicious may otherwise steal NPM_AUTH_TOKEN
     - name: 📀 Install
       run: |
@@ -40,7 +45,7 @@ runs:
         then
           echo "Cache hit - skipping dependency installation"
         else
-          echo "No chache hit - installing with command: ${{ inputs.COMMAND }}"
+          echo "No cache hit - installing with command: ${{ inputs.COMMAND }}"
           cd ${{ inputs.PROJECT_ROOT }}
           ${{ inputs.COMMAND }}
         fi

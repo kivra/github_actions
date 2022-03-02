@@ -45,7 +45,7 @@ runs:
         then
           echo "Cache hit - skipping dependency installation"
         else
-          echo "No chache hit - installing with command: ${{ inputs.COMMAND }}"
+          echo "No cache hit - installing with command: ${{ inputs.COMMAND }}"
           cd ${{ inputs.PROJECT_ROOT }}
           ${{ inputs.COMMAND }}
         fi

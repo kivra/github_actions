@@ -18,7 +18,7 @@ inputs:
     required: false
   CACHE_CHILD_NODE_MODULES:
     default: "false"
-    description: 'When true all <PROJECT_ROOT>/**/node_modules is added to the cache'
+    description: 'When true <PROJECT_ROOT>/**/node_modules is added to the cache. Note that this does not affect the cache key.'
     required: false
 
 runs:

@@ -5,6 +5,7 @@ runs:
   using: "composite"
   steps:
     - name: ⬇️ Install lokalise2 CLI
+      shell: bash
       run: |
         curl -sfL https://raw.githubusercontent.com/lokalise/lokalise-cli-2-go/master/install.sh | sh
         echo "$GITHUB_WORKSPACE/bin" >> $GITHUB_PATH

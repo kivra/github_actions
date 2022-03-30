@@ -22,12 +22,21 @@ inputs:
     required: false
   CACHE_KEY:
     default: "0"
-    description: 'Cahce key for invalidating cache'
+    description: 'This key will be used in the actual cache key and can be used to invalidate the cache or distinguish between multiple caches in the same repo.'
     required: false
   PATHS:
     default: ""
     description: 'Additional paths to cache as \n separated string'
     required: false
+  OVERRIDE_KEY:
+    default: ""
+    description: 'Provide an exact key to use instead of generating from parameters. This can be used with the ouput key from a previous instance to garantee restore without providing all of the same arguments again.'
+    required: false
+
+outputs:
+  KEY:
+    description: 'The resulting cache key, can be used for restoring the cache later on wihtout providing all the arguments'
+    value: ${{ steps.key.outputs.key}}
 
 runs:
   using: "composite"
@@ -37,6 +46,10 @@ runs:
       with:
         node-version: ${{ inputs.NODE_VERSION }}
         registry-url: 'https://npm.pkg.github.com'
+    - name: Generate key
+      id: key
+      shell: bash
+      run: echo "::set-output name=key::npm-v${{ inputs.CACHE_KEY }}-${{ runner.os }}-${{ inputs.NODE_VERSION }}-${{ hashFiles(format('{0}/package-lock.json', inputs.PROJECT_ROOT)) }}-children-${{ inputs.CACHE_CHILD_NODE_MODULES}}"
     - name: ♻️ NPM Cache
       uses: actions/cache@v2
       id: npm-cache
@@ -46,9 +59,10 @@ runs:
           ${{ inputs.PROJECT_ROOT }}/node_modules
           ${{ inputs.CACHE_CHILD_NODE_MODULES == 'true' && format('{0}/**/node_modules', inputs.PROJECT_ROOT) || '' }}
           ${{ inputs.PATHS }}
-        key: npm-v${{ inputs.CACHE_KEY }}-${{ runner.os }}-${{ inputs.NODE_VERSION }}-${{ hashFiles(format('{0}/package-lock.json', inputs.PROJECT_ROOT)) }}-children-${{ inputs.CACHE_CHILD_NODE_MODULES}}
+        key: ${{ steps.key.outputs.key }}
     # Skip post-install scripts here, as a malicious may otherwise steal NPM_AUTH_TOKEN
     - name: 📀 Install
+      id: result
       run: |
         if [[ "${{ steps.npm-cache.outputs.cache-hit }}" == "true" ]]
         then
@@ -58,6 +72,7 @@ runs:
           cd ${{ inputs.PROJECT_ROOT }}
           ${{ inputs.COMMAND }}
         fi
+        echo "::set-output name=key::"
       shell: bash
       env:
         CI: "true"

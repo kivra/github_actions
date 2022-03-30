@@ -20,6 +20,14 @@ inputs:
     default: "false"
     description: 'When true <PROJECT_ROOT>/**/node_modules is added to the cache. Note that this does not affect the cache key.'
     required: false
+  CACHE_KEY:
+    default: "0"
+    description: 'Cahce key for invalidating cache'
+    required: false
+  PATHS:
+    default: ""
+    description: 'Additional paths to cache as \n separated string'
+    required: false
 
 runs:
   using: "composite"
@@ -37,7 +45,8 @@ runs:
           ${{ inputs.PROJECT_ROOT }}/.npm
           ${{ inputs.PROJECT_ROOT }}/node_modules
           ${{ inputs.CACHE_CHILD_NODE_MODULES == 'true' && format('{0}/**/node_modules', inputs.PROJECT_ROOT) || '' }}
-        key: npm-v3-${{ runner.os }}-${{ inputs.NODE_VERSION }}-${{ hashFiles(format('{0}/package-lock.json', inputs.PROJECT_ROOT)) }}-children-${{ inputs.CACHE_CHILD_NODE_MODULES}}
+          ${{ inputs.PATHS }}
+        key: npm-v${{ inputs.CACHE_KEY }}-${{ runner.os }}-${{ inputs.NODE_VERSION }}-${{ hashFiles(format('{0}/package-lock.json', inputs.PROJECT_ROOT)) }}-children-${{ inputs.CACHE_CHILD_NODE_MODULES}}
     # Skip post-install scripts here, as a malicious may otherwise steal NPM_AUTH_TOKEN
     - name: 📀 Install
       run: |

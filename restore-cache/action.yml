@@ -5,6 +5,9 @@ inputs:
   KEY:
     description: 'Key of the cache to restore.'
     required: true
+  PATH:
+    description: 'Paths of the cache to restore.'
+    required: true
 
 runs:
   using: "composite"
@@ -13,7 +16,7 @@ runs:
       uses: actions/cache@v2
       id: restore
       with:
-        path: "/**/*"
+        path: ${{ inputs.PATH }}
         key: ${{ inputs.KEY }}
     - name: Verify
       id: result

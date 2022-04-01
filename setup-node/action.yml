@@ -32,7 +32,10 @@ inputs:
 outputs:
   KEY:
     description: 'The resulting cache key, can be used for restoring the cache later on wihtout providing all the arguments'
-    value: ${{ steps.key.outputs.key}}
+    value: ${{ steps.key.outputs.key }}
+  PATH:
+    description: 'The cached paths, can be used for restoring the cache later on wihtout providing all the arguments'
+    value: ${{ steps.key.outputs.path }}
 
 runs:
   using: "composite"
@@ -45,16 +48,21 @@ runs:
     - name: Generate key
       id: key
       shell: bash
-      run: echo "::set-output name=key::npm-v${{ inputs.CACHE_KEY }}-${{ runner.os }}-${{ inputs.NODE_VERSION }}-${{ hashFiles(format('{0}/package-lock.json', inputs.PROJECT_ROOT)) }}-children-${{ inputs.CACHE_CHILD_NODE_MODULES}}"
+      run: | 
+        echo "::set-output name=key::npm-v${{ inputs.CACHE_KEY }}-${{ runner.os }}-${{ inputs.NODE_VERSION }}-${{ hashFiles(format('{0}/package-lock.json', inputs.PROJECT_ROOT)) }}-children-${{ inputs.CACHE_CHILD_NODE_MODULES}}"
+    - name: Set paths
+      id: path
+      shell: bash
+      run: | 
+        echo "::set-output name=path::${{ inputs.PROJECT_ROOT }}/.npm
+          ${{ inputs.PROJECT_ROOT }}/node_modules
+          ${{ inputs.CACHE_CHILD_NODE_MODULES == 'true' && format('{0}/**/node_modules', inputs.PROJECT_ROOT) || '' }}
+          ${{ inputs.PATHS }}"
     - name: ♻️ NPM Cache
       uses: actions/cache@v2
       id: npm-cache
       with:
-        path: |
-          ${{ inputs.PROJECT_ROOT }}/.npm
-          ${{ inputs.PROJECT_ROOT }}/node_modules
-          ${{ inputs.CACHE_CHILD_NODE_MODULES == 'true' && format('{0}/**/node_modules', inputs.PROJECT_ROOT) || '' }}
-          ${{ inputs.PATHS }}
+        path: ${{ steps.path.outputs.path }}
         key: ${{ steps.key.outputs.key }}
     # Skip post-install scripts here, as a malicious may otherwise steal NPM_AUTH_TOKEN
     - name: 📀 Install

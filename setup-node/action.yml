@@ -35,7 +35,7 @@ outputs:
     value: ${{ steps.key.outputs.key }}
   PATH:
     description: 'The cached paths, can be used for restoring the cache later on wihtout providing all the arguments'
-    value: ${{ steps.key.outputs.path }}
+    value: ${{ steps.path.outputs.path }}
 
 runs:
   using: "composite"

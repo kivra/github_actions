@@ -54,7 +54,7 @@ runs:
       id: path
       shell: bash
       run: | 
-        echo "::set-output name=path::${{ inputs.PROJECT_ROOT }}/.npm\n${{ inputs.PROJECT_ROOT }}/node_modules\n${{ inputs.CACHE_CHILD_NODE_MODULES == 'true' && format('{0}/**/node_modules', inputs.PROJECT_ROOT) || '' }}\n${{ inputs.PATHS }}"
+        echo "::set-output name=path::${{ inputs.PROJECT_ROOT }}/.npm ${{ inputs.PROJECT_ROOT }}/node_modules ${{ inputs.CACHE_CHILD_NODE_MODULES == 'true' && format('{0}/**/node_modules', inputs.PROJECT_ROOT) || '' }} ${{ inputs.PATHS }}"
     - name: ♻️ NPM Cache
       uses: actions/cache@v2
       id: npm-cache

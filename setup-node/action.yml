@@ -28,10 +28,6 @@ inputs:
     default: ""
     description: 'Additional paths to cache as \n separated string'
     required: false
-  OVERRIDE_KEY:
-    default: ""
-    description: 'Provide an exact key to use instead of generating from parameters. This can be used with the ouput key from a previous instance to garantee restore without providing all of the same arguments again.'
-    required: false
 
 outputs:
   KEY:

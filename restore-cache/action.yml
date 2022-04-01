@@ -13,6 +13,7 @@ runs:
       uses: actions/cache@v2
       id: restore
       with:
+        path: "/**/*"
         key: ${{ inputs.KEY }}
     - name: Verify
       id: result

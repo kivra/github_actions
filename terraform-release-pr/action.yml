@@ -1,0 +1,59 @@
+name: 'Terraform release PR'
+description: 'Create a PR with bumped artifact version number in .tfvars'
+
+inputs:
+  VERSION:
+    description: 'Version to deploy'
+    required: true
+  ARTIFACT_NAME:
+    description: 'The name of your image'
+    required: true
+  ARTIFACT_VAR_NAME:
+    description: 'Name of variable to replace'
+    default: 'image'
+    required: false
+  GITHUB_TOKEN:
+    description: 'Token to be used for PR creation'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Create release branch
+      shell: bash
+      id: create_release_branch
+      run: |
+        # checkout new branch
+        BRANCH_NAME="release/${{ inputs.VERSION }}"
+        git checkout -b $BRANCH_NAME
+        # get current prod version
+        PREVIOUS_VERSION="$(cat ./terraform/prod/terraform.*.tfvars | grep -Po '(?<=${{ inputs.ARTIFACT_VAR_NAME }} = "${{ inputs.ARTIFACT_NAME }}:).*[^"]')"
+        # update tfvars
+        sed -i 's/#*${{ inputs.ARTIFACT_VAR_NAME }} =.*/${{ inputs.ARTIFACT_VAR_NAME }} = "${{ inputs.ARTIFACT_NAME }}:${{ inputs.VERSION }}"/' ./terraform/*/terraform.*.tfvars
+        # commit changes
+        git config user.name "terrafrom-release-bot"
+        git config user.email "<>"
+        git add ./terraform/*/terraform.*.tfvars
+        git commit -m "chore: set ${{ inputs.ARTIFACT_NAME }} version ${{ inputs.VERSION }}"
+        # push branch
+        git push --set-upstream origin $BRANCH_NAME
+        # git log
+        git fetch --all --tags
+        LOG="$(git log --pretty=format:"%s %an \n" v${{ inputs.VERSION  }}...v$PREVIOUS_VERSION)"
+        # set outputs
+        echo ::set-output name=BRANCH_NAME::$BRANCH_NAME
+        echo ::set-output name=PREVIOUS_VERSION::$PREVIOUS_VERSION
+        echo ::set-output name=LOG::$LOG
+    - name: Create release PR
+      uses: actions/github-script@v4
+      with:
+        github-token: ${{ inputs.GITHUB_TOKEN }}
+        script: |
+          github.request('POST /repos/{owner}/{repo}/pulls', {
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            head: '${{ steps.create_release_branch.outputs.BRANCH_NAME }}',
+            base: 'main',
+            title: 'Release ${{ inputs.VERSION  }}',
+            body: `https://github.com/kivra/${context.repo.repo}/compare/v${{ steps.create_release_branch.outputs.PREVIOUS_VERSION }}...v${{ inputs.VERSION }} \n\nChanges since v${{ steps.create_release_branch.outputs.PREVIOUS_VERSION }}:\n\n${{steps.create_release_branch.outputs.LOG }}`
+          });

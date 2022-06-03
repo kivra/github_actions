@@ -23,24 +23,24 @@ runs:
       shell: bash
       id: create_release_branch
       run: |
-        # checkout new branch
+        echo "# checkout new branch"
         BRANCH_NAME="release/${{ inputs.VERSION }}"
         git checkout -b $BRANCH_NAME
-        # get current prod version
+        echo "# get current prod version"
         PREVIOUS_VERSION="$(cat ./terraform/prod/terraform.*.tfvars | grep -Po '(?<=${{ inputs.ARTIFACT_VAR_NAME }} = "${{ inputs.ARTIFACT_NAME }}:).*[^"]')"
-        # update tfvars
+        echo "# update tfvars"
         sed -i 's/#*${{ inputs.ARTIFACT_VAR_NAME }} =.*/${{ inputs.ARTIFACT_VAR_NAME }} = "${{ inputs.ARTIFACT_NAME }}:${{ inputs.VERSION }}"/' ./terraform/*/terraform.*.tfvars
-        # commit changes
+        echo "# commit changes"
         git config user.name "terrafrom-release-bot"
         git config user.email "<>"
         git add ./terraform/*/terraform.*.tfvars
         git commit -m "chore: set ${{ inputs.ARTIFACT_NAME }} version ${{ inputs.VERSION }}"
-        # push branch
+        echo "# push branch"
         git push --set-upstream origin $BRANCH_NAME
-        # git log
+        echo "# git log"
         git fetch --all --tags
         LOG="$(git log --pretty=format:"%s %an \n" v${{ inputs.VERSION  }}...v$PREVIOUS_VERSION)"
-        # set outputs
+        echo "# set outputs"
         echo ::set-output name=BRANCH_NAME::$BRANCH_NAME
         echo ::set-output name=PREVIOUS_VERSION::$PREVIOUS_VERSION
         echo ::set-output name=LOG::$LOG

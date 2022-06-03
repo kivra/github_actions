@@ -27,7 +27,7 @@ runs:
         BRANCH_NAME="release/${{ inputs.VERSION }}"
         git checkout -b $BRANCH_NAME
         echo "# get current prod version"
-        PREVIOUS_VERSION="$(cat ./terraform/prod/terraform.*.tfvars | grep -Po '(?<=${{ inputs.ARTIFACT_VAR_NAME }} = "${{ inputs.ARTIFACT_NAME }}:).*[^"]')"
+        PREVIOUS_VERSION="$(cat ./terraform/prod/terraform.prod.tfvars | sed -n 's/.*image.*=.*sender-portal-bff:\(.*\)"$/\1/p')"
         echo "# update tfvars"
         sed -i 's/#*${{ inputs.ARTIFACT_VAR_NAME }} =.*/${{ inputs.ARTIFACT_VAR_NAME }} = "${{ inputs.ARTIFACT_NAME }}:${{ inputs.VERSION }}"/' ./terraform/*/terraform.*.tfvars
         echo "# commit changes"

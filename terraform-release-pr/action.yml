@@ -30,7 +30,7 @@ runs:
         PREVIOUS_VERSION="$(cat ./terraform/prod/terraform.prod.tfvars | sed -n 's/.*image.*=.*sender-portal-bff:\(.*\)"$/\1/p')"
         echo "$PREVIOUS_VERSION"
         echo "# update tfvars"
-        sed -i 's/#*${{ inputs.ARTIFACT_VAR_NAME }} =.*/${{ inputs.ARTIFACT_VAR_NAME }} = "${{ inputs.ARTIFACT_NAME }}:${{ inputs.VERSION }}"/' ./terraform/*/terraform.*.tfvars
+        sed -i 's/#*${{ inputs.ARTIFACT_VAR_NAME }}\(.*\)=.*/${{ inputs.ARTIFACT_VAR_NAME }}\1= "${{ inputs.ARTIFACT_NAME }}:${{ inputs.VERSION }}"/' ./terraform/*/terraform.*.tfvars
         cat ./terraform/*/terraform.*.tfvars
         echo "# commit changes"
         git status

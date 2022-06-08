@@ -7,7 +7,7 @@ inputs:
     required: true
   VERSION_VAR_NAME:
     description: 'Name of variable to replace'
-    default: 'version'
+    default: 'image_version'
     required: false
   GITHUB_TOKEN:
     description: 'Token to be used for PR creation'

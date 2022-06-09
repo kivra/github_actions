@@ -2,11 +2,11 @@ name: "Validate GraphQL Schema"
 description: "Validate graphql schema and check for breaking changes"
 
 inputs:
-  GQL_URL:
-    description: "URL to endpoint where previous version of schema can be read"
+  OLD_SCHEMA:
+    description: "URL or path to old schema"
     required: true
-  SCHEMA_PATH:
-    description: "Path to the new schema"
+  NEW_SCHEMA:
+    description: "URL or path to old schema"
     required: true
   GITHUB_TOKEN:
     description: "Token to be used to create PR check"
@@ -19,7 +19,7 @@ runs:
     id: schema_validation
     shell: 'bash'
     run: |
-      RESULT=$(npx @graphql-inspector/cli diff ${{ inputs.GQL_URL }} ${{ inputs.SCHEMA_PATH}} --header 'codegen: true') || true
+      RESULT=$(npx @graphql-inspector/cli diff ${{ inputs.OLD_SCHEMA }} ${{ inputs.NEW_SCHEMA}} --header 'codegen: true') || true
       echo $RESULT;
       echo ::set-output name=RESULT::$RESULT
 

@@ -1,0 +1,63 @@
+name: "Validate GraphQL Schema"
+description: "Validate graphql schema and check for breaking changes"
+
+inputs:
+  GQL_URL:
+    description: "URL to endpoint where previous version of schema can be read"
+    required: true
+  SCHEMA_PATH:
+    description: "Path to the new schema"
+    required: true
+  GITHUB_TOKEN:
+    description: "Token to be used to create PR check"
+    required: true
+
+runs:
+  using: "composite"
+  steps: 
+  - name: 🗳️ Validate schema
+    id: schema_validation
+    shell: 'bash'
+    run: |
+      RESULT=$(npx @graphql-inspector/cli diff ${{ inputs.GQL_URL }} ${{ inputs.SCHEMA_PATH}} --header 'codegen: true') || true
+      echo $RESULT;
+      echo ::set-output name=RESULT::$RESULT
+
+  - name: 📣 Create check for schema validation
+    uses: actions/github-script@v4
+    with:
+      github-token: ${{ inputs.GITHUB_TOKEN }}
+      script: |
+        const checkResultBody = `${{ steps.schema_validation.outputs.RESULT }}`;
+        const outputBody = checkResultBody
+          .split('[log]')
+          .map(l => l.trim()
+            .replace('✖', '🔥')
+            .replace('Detected the following', '## Detected the following')
+          ).join('\n')
+        const noChanges = checkResultBody.startsWith('[success]');
+
+        const [ owner, repo ] = process.env.GITHUB_REPOSITORY.split('/');
+        const checkName = 'Schema validation';
+
+        const newCheck = await github.checks.create({
+          status: 'in_progress',
+          owner,
+          repo,
+          name: checkName,
+          head_sha: process.env.GITHUB_SHA
+        });
+
+        const check_run_id = newCheck.data.id;
+        return github.checks.update({
+          owner,
+          repo,
+          check_run_id,
+          name: checkName,
+          status: 'completed',
+          conclusion: noChanges ? 'success' : 'neutral',
+          output: {
+            title: noChanges ? 'No GraphQL schema changes detected 🎉' : 'Detected schema changes',
+            summary: outputBody
+          }
+        });

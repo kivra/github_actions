@@ -37,9 +37,9 @@ runs:
         git commit -m "chore: set version ${{ inputs.VERSION }}"
         echo "# push branch"
         git push --set-upstream origin $BRANCH_NAME
-        echo "# git log"
         git fetch --all --tags
-        LOG="$(git log --pretty=format:"%s %an \n" v${{ inputs.VERSION  }}...v$PREVIOUS_VERSION)"
+        echo "# git log --pretty=format:"%s %an \n" v$PREVIOUS_VERSION...v${{ inputs.VERSION  }}"
+        LOG="$(git log --pretty=format:"%s %an \n" v$PREVIOUS_VERSION...v${{ inputs.VERSION  }} | sed -n 's/`/\\`/gp')"
         echo "# set outputs"
         echo ::set-output name=BRANCH_NAME::$BRANCH_NAME
         echo ::set-output name=PREVIOUS_VERSION::$PREVIOUS_VERSION

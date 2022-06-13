@@ -39,8 +39,11 @@ runs:
         git push --set-upstream origin $BRANCH_NAME
         git fetch --all --tags
         echo "# git log --pretty=format:"%s %an \n" v$PREVIOUS_VERSION...v${{ inputs.VERSION  }}"
-        LOG="$(git log --pretty=format:"%s %an \n" v$PREVIOUS_VERSION...v${{ inputs.VERSION  }} | sed -n 's/`/\\`/gp')"
+        LOG="$(git log --pretty=format:"%s %an \n" v$PREVIOUS_VERSION...v${{ inputs.VERSION  }} | sed 's/`/\\`/gp')"
         echo "# set outputs"
+        echo "BRANCH_NAME: $BRANCH_NAME"
+        echo "PREVIOUS_VERSION: $PREVIOUS_VERSION"
+        echo "LOG: $LOG"
         echo ::set-output name=BRANCH_NAME::$BRANCH_NAME
         echo ::set-output name=PREVIOUS_VERSION::$PREVIOUS_VERSION
         echo ::set-output name=LOG::$LOG
